@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS short_links(
+    id SERIAL PRIMARY KEY,
+    original_url TEXT NOT NULL,
+    click_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER,
+    expires_in INTEGER,
+    alias VARCHAR(255) UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
