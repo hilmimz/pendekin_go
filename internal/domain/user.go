@@ -9,3 +9,9 @@ type User struct {
 	Password  string    `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type UserRepository interface {
+}
+
+type UserUsecase interface {
+}
