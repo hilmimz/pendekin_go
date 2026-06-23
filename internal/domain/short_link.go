@@ -1,19 +1,39 @@
 package domain
 
+import (
+	"pendekin_go/pkg/errors"
+	"time"
+)
+
 type ShortLink struct {
-	ID          int    `json:"id"`
-	OriginalURL string `json:"original_url"`
-	ClickCount  int    `json:"click_count"`
-	CreatedAt   string `json:"created_at"`
-	UserID      int    `json:"user_id"`
-	ExpiresIn   int    `json:"expires_in"`
-	Alias       string `json:"alias"`
+	ID          int       `json:"id"`
+	OriginalURL string    `json:"original_url"`
+	ClickCount  int       `json:"click_count"`
+	CreatedAt   time.Time `json:"created_at"`
+	UserID      int       `json:"user_id"`
+	ExpiresAt   time.Time `json:"expires_at"`
+	Alias       *string   `json:"alias"`
 }
 
-type ShortLinkRepository interface{}
+type CreateShortLinkRequest struct {
+	OriginalURL string  `json:"original_url"`
+	UserID      int     `json:"user_id"`
+	ExpiresIn   int     `json:"expires_in"`
+	Alias       *string `json:"alias"`
+}
+
+type CreateShortLinkResponse struct {
+	ShortLink string    `json:"short_link"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type ShortLinkRepository interface {
+	FindByAlias(alias *string) (bool, error)
+	Create(shortLink *ShortLink) error
+}
 
 type ShortLinkUsecase interface {
-	CreateShortLink(originalURL string, userID int, expiresIn int, alias string) (*ShortLink, error)
-	DeleteShortLink(shortLinkID int, userID int) error
-	GetShortLinkStats(shortLinkID int) (*ShortLink, error)
+	CreateShortLink(req *CreateShortLinkRequest) (*CreateShortLinkResponse, *errors.Error)
+	// DeleteShortLink(shortLinkID int, userID int) *errors.Error
+	// GetShortLinkStats(shortLinkID int) (*ShortLink, *errors.Error)
 }

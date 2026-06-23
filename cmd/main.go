@@ -5,6 +5,8 @@ import (
 	"pendekin_go/config"
 	"pendekin_go/internal/database"
 	"pendekin_go/internal/handler"
+	"pendekin_go/internal/repository"
+	"pendekin_go/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,13 +22,23 @@ func main() {
 		log.Fatal("failed to connect to database: ", err)
 	}
 
+	// Init Repository
+	shortLinkRepo := repository.NewShortLinkRepository(db.DB)
+
+	// Init Usecase
+	shortLinkUseCase := usecase.NewShortLinkUseCase(shortLinkRepo, &cfg.App)
+
 	// Init Handlers
 	healthHandler := handler.NewHealthHandler(db)
+	shortLinkHandler := handler.NewShortLinkHandler(shortLinkUseCase)
 
 	// Setup Router
 	router := gin.Default()
-	v1 := router.Group("/api/v1")
-	v1.GET("/healthcheck", healthHandler.HealthCheck)
+	api := router.Group("/api")
+	api.GET("/healthcheck", healthHandler.HealthCheck)
+	api.POST("/short-links/create", shortLinkHandler.Create)
+
+	// Short Link Route
 
 	router.Run(":8080")
 }

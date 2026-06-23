@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS short_links(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INTEGER,
-    expires_in INTEGER,
+    expires_at TIMESTAMP,
     alias VARCHAR(255) UNIQUE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );

@@ -7,6 +7,7 @@ import (
 
 type Config struct {
 	Database DatabaseConfig
+	App      AppConfig
 }
 
 type DatabaseConfig struct {
@@ -15,6 +16,12 @@ type DatabaseConfig struct {
 	User     string `env:"DB_USER" envDefault:"postgres"`
 	Password string `env:"DB_PASSWORD"`
 	Name     string `env:"DB_NAME" envDefault:"mydb"`
+}
+
+type AppConfig struct {
+	AppName     string `env:"APP_NAME" envDefault:"localhost:8080"`
+	AliasLength int    `env:"ALIAS_LENGTH" envDefault:"6"`
+	ExpiresIn   int    `env:"EXPIRES_IN" envDefault:"24"`
 }
 
 func NewConfig() (*Config, error) {
