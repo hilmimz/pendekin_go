@@ -25,7 +25,8 @@ func main() {
 
 	// Setup Router
 	router := gin.Default()
-	router.GET("/healthcheck", healthHandler.HealthCheck)
+	v1 := router.Group("/api/v1")
+	v1.GET("/healthcheck", healthHandler.HealthCheck)
 
 	router.Run(":8080")
 }
