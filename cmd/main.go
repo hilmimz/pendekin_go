@@ -2,14 +2,15 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"pendekin_go/config"
 	"pendekin_go/internal/database"
+	"pendekin_go/internal/handler"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// Load Config
 	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatal("failed to load config: ", err)
@@ -19,20 +20,12 @@ func main() {
 		log.Fatal("failed to connect to database: ", err)
 	}
 
+	// Init Handlers
+	healthHandler := handler.NewHealthHandler(db)
+
+	// Setup Router
 	router := gin.Default()
-	router.GET("/healthcheck", func(c *gin.Context) {
-		status := db.HealthCheck()
-		if status != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Database connection failed",
-			})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"message": "OK",
-			"db":      "Connected",
-		})
-	})
+	router.GET("/healthcheck", healthHandler.HealthCheck)
 
 	router.Run(":8080")
 }
