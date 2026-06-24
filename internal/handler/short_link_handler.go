@@ -41,3 +41,21 @@ func (s *ShortLinkHandler) Create(c *gin.Context) {
 	}
 	response.ResponseOK(c, 201, "Short link created successfully", resp)
 }
+
+func (s *ShortLinkHandler) Redirect(c *gin.Context) {
+	var req domain.RedirectShortLinkRequest
+	alias := c.Param("alias")
+
+	req = domain.RedirectShortLinkRequest{
+		Alias: &alias,
+	}
+
+	resp, err := s.shortLinkUseCase.RedirectShortLink(&req)
+	if err != nil {
+		// Should redirect to frontend 404 or return html
+		response.ResponseNOK(c, err.Code, err.Message, nil)
+		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, resp.OriginalURL)
+}

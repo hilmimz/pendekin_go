@@ -1,11 +1,12 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"pendekin_go/config"
 	"pendekin_go/internal/domain"
-	"pendekin_go/pkg/errors"
+	"pendekin_go/pkg/errs"
 	"time"
 )
 
@@ -32,7 +33,7 @@ func generateRandomAlias(length int) *string {
 	return &alias
 }
 
-func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (*domain.CreateShortLinkResponse, *errors.Error) {
+func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (*domain.CreateShortLinkResponse, *errs.Error) {
 	var alias *string
 	var expiresIn int
 
@@ -40,15 +41,16 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 		alias = generateRandomAlias(int(s.cfg.AliasLength))
 	} else {
 		alias = req.Alias
-		isAliasExists, err := s.shortLinkRepo.FindByAlias(alias)
-		if err != nil {
-			err := errors.Internal("failed to find short link by alias", err)
-			return nil, err
+		shortUrl, err := s.shortLinkRepo.FindByAlias(alias)
+
+		if shortUrl != nil {
+			return nil, errs.Conflict("alias already exist", err)
 		}
-		if isAliasExists {
-			err := errors.Conflict("alias already exist", err)
-			return nil, errors.Conflict("alias already exist", err)
+
+		if err != nil && !errors.Is(err, domain.ErrAliasNotFound) {
+			return nil, errs.Internal("failed to find short link by alias", err)
 		}
+
 	}
 
 	if req.ExpiresIn == nil {
@@ -66,7 +68,7 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 		Alias:       alias,
 	}
 	if err := s.shortLinkRepo.Create(shortLink); err != nil {
-		err := errors.Internal("failed to create short link: ", err)
+		err := errs.Internal("failed to create short link: ", err)
 		return nil, err
 	}
 
@@ -78,5 +80,29 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 		ExpiresAt:   shortLink.ExpiresAt,
 		CreatedAt:   shortLink.CreatedAt,
 	}
+	return res, nil
+}
+
+func (s *ShortLinkUseCase) RedirectShortLink(req *domain.RedirectShortLinkRequest) (*domain.RedirectShortLinkResponse, *errs.Error) {
+	shortUrl, err := s.shortLinkRepo.FindByAlias(req.Alias)
+	if err != nil && !errors.Is(err, domain.ErrAliasNotFound) {
+		err := errs.Internal("failed to find short link by alias", err)
+		return nil, err
+	}
+
+	if shortUrl == nil {
+		err := errs.NotFound("short link not found", err)
+		return nil, err
+	}
+
+	res := &domain.RedirectShortLinkResponse{
+		OriginalURL: shortUrl.OriginalURL,
+	}
+
+	if err := s.shortLinkRepo.UpdateClickCount(shortUrl); err != nil {
+		err := errs.Internal("failed to update click count", err)
+		return nil, err
+	}
+
 	return res, nil
 }

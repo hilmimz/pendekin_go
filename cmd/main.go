@@ -41,6 +41,7 @@ func main() {
 	api := router.Group("/api")
 	api.GET("/healthcheck", healthHandler.HealthCheck)
 	api.POST("/short-links/create", shortLinkHandler.Create)
+	router.GET("/:alias", shortLinkHandler.Redirect)
 
 	// Short Link Route
 

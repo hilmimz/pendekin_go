@@ -1,8 +1,13 @@
 package domain
 
 import (
-	"pendekin_go/pkg/errors"
+	"errors"
+	"pendekin_go/pkg/errs"
 	"time"
+)
+
+var (
+	ErrAliasNotFound = errors.New("alias not found")
 )
 
 type ShortLink struct {
@@ -31,13 +36,23 @@ type CreateShortLinkResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+type RedirectShortLinkRequest struct {
+	Alias *string `json:"alias" binding:"required"`
+}
+
+type RedirectShortLinkResponse struct {
+	OriginalURL string `json:"original_url"`
+}
+
 type ShortLinkRepository interface {
-	FindByAlias(alias *string) (bool, error)
+	FindByAlias(alias *string) (*ShortLink, error)
 	Create(shortLink *ShortLink) error
+	UpdateClickCount(shortLink *ShortLink) error
 }
 
 type ShortLinkUsecase interface {
-	CreateShortLink(req *CreateShortLinkRequest) (*CreateShortLinkResponse, *errors.Error)
+	CreateShortLink(req *CreateShortLinkRequest) (*CreateShortLinkResponse, *errs.Error)
+	RedirectShortLink(req *RedirectShortLinkRequest) (*RedirectShortLinkResponse, *errs.Error)
 	// DeleteShortLink(shortLinkID int, userID int) *errors.Error
 	// GetShortLinkStats(shortLinkID int) (*ShortLink, *errors.Error)
 }
