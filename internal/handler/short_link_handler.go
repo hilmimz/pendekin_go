@@ -1,10 +1,13 @@
 package handler
 
 import (
-	"fmt"
+	"errors"
+	"net/http"
 	"pendekin_go/internal/domain"
+	"pendekin_go/pkg/validation"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type ShortLinkHandler struct {
@@ -20,10 +23,18 @@ func NewShortLinkHandler(shortLinkUseCase domain.ShortLinkUsecase) *ShortLinkHan
 func (s *ShortLinkHandler) Create(c *gin.Context) {
 	var req domain.CreateShortLinkRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "invalid request"})
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"errors": validation.FormatValidationErrors(ve),
+			})
+			return
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
-	fmt.Println("Request Body:", req)
+
 	resp, err := s.shortLinkUseCase.CreateShortLink(&req)
 	if err != nil {
 		c.JSON(err.Code, gin.H{

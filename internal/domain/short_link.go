@@ -16,10 +16,10 @@ type ShortLink struct {
 }
 
 type CreateShortLinkRequest struct {
-	OriginalURL string  `json:"original_url"`
+	OriginalURL string  `json:"original_url" binding:"required,url"`
 	UserID      int     `json:"user_id"`
-	ExpiresIn   int     `json:"expires_in"`
-	Alias       *string `json:"alias"`
+	ExpiresIn   *int    `json:"expires_in" binding:"omitempty,min=1"`
+	Alias       *string `json:"alias" binding:"omitempty,min=4,max=20,alphanum"`
 }
 
 type CreateShortLinkResponse struct {

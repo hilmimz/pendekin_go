@@ -50,9 +50,13 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 			return nil, err
 		}
 	}
-	if expiresIn := req.ExpiresIn; expiresIn <= 0 {
+
+	if req.ExpiresIn == nil {
 		expiresIn = s.cfg.ExpiresIn
+	} else {
+		expiresIn = *req.ExpiresIn
 	}
+
 	expiresAt := time.Now().Add(time.Duration(expiresIn) * time.Hour)
 	shortLink := &domain.ShortLink{
 		OriginalURL: req.OriginalURL,
