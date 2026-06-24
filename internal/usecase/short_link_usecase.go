@@ -71,8 +71,12 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 	}
 
 	res := &domain.CreateShortLinkResponse{
-		ShortLink: fmt.Sprintf(s.cfg.AppName+"/%s", *shortLink.Alias),
-		ExpiresAt: shortLink.ExpiresAt,
+		ID:          shortLink.ID,
+		OriginalURL: shortLink.OriginalURL,
+		Alias:       shortLink.Alias,
+		ShortUrl:    fmt.Sprint("http://" + s.cfg.AppName + "/" + *shortLink.Alias),
+		ExpiresAt:   shortLink.ExpiresAt,
+		CreatedAt:   shortLink.CreatedAt,
 	}
 	return res, nil
 }

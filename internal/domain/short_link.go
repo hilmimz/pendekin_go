@@ -23,8 +23,12 @@ type CreateShortLinkRequest struct {
 }
 
 type CreateShortLinkResponse struct {
-	ShortLink string    `json:"short_link"`
-	ExpiresAt time.Time `json:"expires_at"`
+	ID          int       `json:"id"`
+	OriginalURL string    `json:"original_url"`
+	Alias       *string   `json:"alias"`
+	ShortUrl    string    `json:"short_url"`
+	ExpiresAt   time.Time `json:"expires_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type ShortLinkRepository interface {
