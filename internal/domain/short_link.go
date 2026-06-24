@@ -37,7 +37,10 @@ type CreateShortLinkResponse struct {
 }
 
 type RedirectShortLinkRequest struct {
-	Alias *string `json:"alias" binding:"required"`
+	Alias     *string `json:"alias" binding:"required"`
+	IPAddress string  `json:"ip_address"`
+	Referer   string  `json:"referer"`
+	UserAgent string  `json:"user_agent"`
 }
 
 type RedirectShortLinkResponse struct {

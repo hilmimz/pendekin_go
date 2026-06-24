@@ -12,12 +12,14 @@ import (
 
 type ShortLinkUseCase struct {
 	shortLinkRepo domain.ShortLinkRepository
+	clickLogRepo  domain.ClickLogRepository
 	cfg           *config.AppConfig
 }
 
-func NewShortLinkUseCase(shortLinkRepo domain.ShortLinkRepository, cfg *config.AppConfig) *ShortLinkUseCase {
+func NewShortLinkUseCase(shortLinkRepo domain.ShortLinkRepository, clickLogRepo domain.ClickLogRepository, cfg *config.AppConfig) *ShortLinkUseCase {
 	return &ShortLinkUseCase{
 		shortLinkRepo: shortLinkRepo,
+		clickLogRepo:  clickLogRepo,
 		cfg:           cfg,
 	}
 }
@@ -101,6 +103,17 @@ func (s *ShortLinkUseCase) RedirectShortLink(req *domain.RedirectShortLinkReques
 
 	if err := s.shortLinkRepo.UpdateClickCount(shortUrl); err != nil {
 		err := errs.Internal("failed to update click count", err)
+		return nil, err
+	}
+
+	if err := s.clickLogRepo.Create(&domain.ClickLog{
+		ClickedAt:   time.Now(),
+		IPAddress:   req.IPAddress,
+		UserAgent:   req.UserAgent,
+		Referer:     req.Referer,
+		ShortLinkID: shortUrl.ID,
+	}); err != nil {
+		err := errs.Internal("failed to create click log", err)
 		return nil, err
 	}
 

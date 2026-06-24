@@ -28,9 +28,10 @@ func main() {
 
 	// Init Repository
 	shortLinkRepo := repository.NewShortLinkRepository(db.DB)
+	clickLogRepo := repository.NewClickLogRepository(db.DB)
 
 	// Init Usecase
-	shortLinkUseCase := usecase.NewShortLinkUseCase(shortLinkRepo, &cfg.App)
+	shortLinkUseCase := usecase.NewShortLinkUseCase(shortLinkRepo, clickLogRepo, &cfg.App)
 
 	// Init Handlers
 	healthHandler := handler.NewHealthHandler(db)

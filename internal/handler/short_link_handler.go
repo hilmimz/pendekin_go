@@ -45,9 +45,15 @@ func (s *ShortLinkHandler) Create(c *gin.Context) {
 func (s *ShortLinkHandler) Redirect(c *gin.Context) {
 	var req domain.RedirectShortLinkRequest
 	alias := c.Param("alias")
+	ipAddress := c.ClientIP()
+	userAgent := c.GetHeader("User-Agent")
+	referer := c.GetHeader("Referer")
 
 	req = domain.RedirectShortLinkRequest{
-		Alias: &alias,
+		Alias:     &alias,
+		IPAddress: ipAddress,
+		UserAgent: userAgent,
+		Referer:   referer,
 	}
 
 	resp, err := s.shortLinkUseCase.RedirectShortLink(&req)
