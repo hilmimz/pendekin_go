@@ -47,7 +47,7 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 		}
 		if isAliasExists {
 			err := errors.Conflict("alias already exist", err)
-			return nil, err
+			return nil, errors.Conflict("alias already exist", err)
 		}
 	}
 
