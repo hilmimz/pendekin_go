@@ -27,24 +27,24 @@ func main() {
 	validation.RegisterValidators()
 
 	// Init Repository
-	shortLinkRepo := repository.NewShortLinkRepository(db.DB)
+	shortUrlRepo := repository.NewShortUrlRepository(db.DB)
 	clickLogRepo := repository.NewClickLogRepository(db.DB)
 
 	// Init Usecase
-	shortLinkUseCase := usecase.NewShortLinkUseCase(shortLinkRepo, clickLogRepo, &cfg.App)
+	shortUrlUseCase := usecase.NewShortUrlUsecase(shortUrlRepo, clickLogRepo, &cfg.App)
 
 	// Init Handlers
 	healthHandler := handler.NewHealthHandler(db)
-	shortLinkHandler := handler.NewShortLinkHandler(shortLinkUseCase)
+	shortUrlHandler := handler.NewShortUrlHandler(shortUrlUseCase)
 
 	// Setup Router
 	router := gin.Default()
 	api := router.Group("/api")
 	api.GET("/healthcheck", healthHandler.HealthCheck)
-	api.POST("/short-links/create", shortLinkHandler.Create)
-	router.GET("/:alias", shortLinkHandler.Redirect)
+	api.POST("/short-urls/create", shortUrlHandler.Create)
+	router.GET("/:alias", shortUrlHandler.Redirect)
 
-	// Short Link Route
+	// Short Url Route
 
 	router.Run(":8080")
 }

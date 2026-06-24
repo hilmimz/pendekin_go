@@ -11,18 +11,18 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type ShortLinkHandler struct {
-	shortLinkUseCase domain.ShortLinkUsecase
+type ShortUrlHandler struct {
+	shortUrlUseCase domain.ShortUrlUsecase
 }
 
-func NewShortLinkHandler(shortLinkUseCase domain.ShortLinkUsecase) *ShortLinkHandler {
-	return &ShortLinkHandler{
-		shortLinkUseCase: shortLinkUseCase,
+func NewShortUrlHandler(shortUrlUseCase domain.ShortUrlUsecase) *ShortUrlHandler {
+	return &ShortUrlHandler{
+		shortUrlUseCase: shortUrlUseCase,
 	}
 }
 
-func (s *ShortLinkHandler) Create(c *gin.Context) {
-	var req domain.CreateShortLinkRequest
+func (s *ShortUrlHandler) Create(c *gin.Context) {
+	var req domain.CreateShortUrlRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) {
@@ -34,29 +34,29 @@ func (s *ShortLinkHandler) Create(c *gin.Context) {
 		return
 	}
 
-	resp, err := s.shortLinkUseCase.CreateShortLink(&req)
+	resp, err := s.shortUrlUseCase.CreateShortUrl(&req)
 	if err != nil {
 		response.ResponseNOK(c, err.Code, err.Message, nil)
 		return
 	}
-	response.ResponseOK(c, 201, "Short link created successfully", resp)
+	response.ResponseOK(c, 201, "Short url created successfully", resp)
 }
 
-func (s *ShortLinkHandler) Redirect(c *gin.Context) {
-	var req domain.RedirectShortLinkRequest
+func (s *ShortUrlHandler) Redirect(c *gin.Context) {
+	var req domain.RedirectShortUrlRequest
 	alias := c.Param("alias")
 	ipAddress := c.ClientIP()
 	userAgent := c.GetHeader("User-Agent")
 	referer := c.GetHeader("Referer")
 
-	req = domain.RedirectShortLinkRequest{
+	req = domain.RedirectShortUrlRequest{
 		Alias:     &alias,
 		IPAddress: ipAddress,
 		UserAgent: userAgent,
 		Referer:   referer,
 	}
 
-	resp, err := s.shortLinkUseCase.RedirectShortLink(&req)
+	resp, err := s.shortUrlUseCase.RedirectShortUrl(&req)
 	if err != nil {
 		// Should redirect to frontend 404 or return html
 		response.ResponseNOK(c, err.Code, err.Message, nil)

@@ -4,6 +4,6 @@ CREATE TABLE IF NOT EXISTS click_logs (
     ip_address VARCHAR(45) NOT NULL,
     user_agent TEXT NOT NULL,
     referer TEXT,
-    short_link_id INTEGER NOT NULL,
-    FOREIGN KEY (short_link_id) REFERENCES short_links(id) ON DELETE CASCADE
+    short_url_id INTEGER NOT NULL,
+    FOREIGN KEY (short_url_id) REFERENCES short_urls(id) ON DELETE CASCADE
 );

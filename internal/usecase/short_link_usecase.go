@@ -10,17 +10,17 @@ import (
 	"time"
 )
 
-type ShortLinkUseCase struct {
-	shortLinkRepo domain.ShortLinkRepository
-	clickLogRepo  domain.ClickLogRepository
-	cfg           *config.AppConfig
+type ShortUrlUsecase struct {
+	shortUrlRepo domain.ShortUrlRepository
+	clickLogRepo domain.ClickLogRepository
+	cfg          *config.AppConfig
 }
 
-func NewShortLinkUseCase(shortLinkRepo domain.ShortLinkRepository, clickLogRepo domain.ClickLogRepository, cfg *config.AppConfig) *ShortLinkUseCase {
-	return &ShortLinkUseCase{
-		shortLinkRepo: shortLinkRepo,
-		clickLogRepo:  clickLogRepo,
-		cfg:           cfg,
+func NewShortUrlUsecase(shortUrlRepo domain.ShortUrlRepository, clickLogRepo domain.ClickLogRepository, cfg *config.AppConfig) *ShortUrlUsecase {
+	return &ShortUrlUsecase{
+		shortUrlRepo: shortUrlRepo,
+		clickLogRepo: clickLogRepo,
+		cfg:          cfg,
 	}
 }
 
@@ -35,7 +35,7 @@ func generateRandomAlias(length int) *string {
 	return &alias
 }
 
-func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (*domain.CreateShortLinkResponse, *errs.Error) {
+func (s *ShortUrlUsecase) CreateShortUrl(req *domain.CreateShortUrlRequest) (*domain.CreateShortUrlResponse, *errs.Error) {
 	var alias *string
 	var expiresIn int
 
@@ -43,7 +43,7 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 		alias = generateRandomAlias(int(s.cfg.AliasLength))
 	} else {
 		alias = req.Alias
-		shortUrl, err := s.shortLinkRepo.FindByAlias(alias)
+		shortUrl, err := s.shortUrlRepo.FindByAlias(alias)
 
 		if shortUrl != nil {
 			return nil, errs.Conflict("alias already exist", err)
@@ -62,19 +62,19 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 	}
 
 	expiresAt := time.Now().Add(time.Duration(expiresIn) * time.Hour)
-	shortLink := &domain.ShortLink{
+	shortLink := &domain.ShortUrl{
 		OriginalURL: req.OriginalURL,
 		ClickCount:  0,
 		UserID:      1,
 		ExpiresAt:   expiresAt,
 		Alias:       alias,
 	}
-	if err := s.shortLinkRepo.Create(shortLink); err != nil {
-		err := errs.Internal("failed to create short link: ", err)
+	if err := s.shortUrlRepo.Create(shortLink); err != nil {
+		err := errs.Internal("failed to create short url", err)
 		return nil, err
 	}
 
-	res := &domain.CreateShortLinkResponse{
+	res := &domain.CreateShortUrlResponse{
 		ID:          shortLink.ID,
 		OriginalURL: shortLink.OriginalURL,
 		Alias:       shortLink.Alias,
@@ -85,33 +85,33 @@ func (s *ShortLinkUseCase) CreateShortLink(req *domain.CreateShortLinkRequest) (
 	return res, nil
 }
 
-func (s *ShortLinkUseCase) RedirectShortLink(req *domain.RedirectShortLinkRequest) (*domain.RedirectShortLinkResponse, *errs.Error) {
-	shortUrl, err := s.shortLinkRepo.FindByAlias(req.Alias)
+func (s *ShortUrlUsecase) RedirectShortUrl(req *domain.RedirectShortUrlRequest) (*domain.RedirectShortUrlResponse, *errs.Error) {
+	shortUrl, err := s.shortUrlRepo.FindByAlias(req.Alias)
 	if err != nil && !errors.Is(err, domain.ErrAliasNotFound) {
-		err := errs.Internal("failed to find short link by alias", err)
+		err := errs.Internal("failed to find short url by alias", err)
 		return nil, err
 	}
 
 	if shortUrl == nil {
-		err := errs.NotFound("short link not found", err)
+		err := errs.NotFound("short url not found", err)
 		return nil, err
 	}
 
-	res := &domain.RedirectShortLinkResponse{
+	res := &domain.RedirectShortUrlResponse{
 		OriginalURL: shortUrl.OriginalURL,
 	}
 
-	if err := s.shortLinkRepo.UpdateClickCount(shortUrl); err != nil {
+	if err := s.shortUrlRepo.UpdateClickCount(shortUrl); err != nil {
 		err := errs.Internal("failed to update click count", err)
 		return nil, err
 	}
 
 	if err := s.clickLogRepo.Create(&domain.ClickLog{
-		ClickedAt:   time.Now(),
-		IPAddress:   req.IPAddress,
-		UserAgent:   req.UserAgent,
-		Referer:     req.Referer,
-		ShortLinkID: shortUrl.ID,
+		ClickedAt:  time.Now(),
+		IPAddress:  req.IPAddress,
+		UserAgent:  req.UserAgent,
+		Referer:    req.Referer,
+		ShortURLID: shortUrl.ID,
 	}); err != nil {
 		err := errs.Internal("failed to create click log", err)
 		return nil, err

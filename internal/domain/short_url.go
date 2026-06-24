@@ -10,7 +10,7 @@ var (
 	ErrAliasNotFound = errors.New("alias not found")
 )
 
-type ShortLink struct {
+type ShortUrl struct {
 	ID          int       `json:"id"`
 	OriginalURL string    `json:"original_url"`
 	ClickCount  int       `json:"click_count"`
@@ -20,14 +20,14 @@ type ShortLink struct {
 	Alias       *string   `json:"alias"`
 }
 
-type CreateShortLinkRequest struct {
+type CreateShortUrlRequest struct {
 	OriginalURL string  `json:"original_url" binding:"required,url"`
 	UserID      int     `json:"user_id"`
 	ExpiresIn   *int    `json:"expires_in" binding:"omitempty,min=1"`
 	Alias       *string `json:"alias" binding:"omitempty,min=4,max=20,alphanum"`
 }
 
-type CreateShortLinkResponse struct {
+type CreateShortUrlResponse struct {
 	ID          int       `json:"id"`
 	OriginalURL string    `json:"original_url"`
 	Alias       *string   `json:"alias"`
@@ -36,26 +36,26 @@ type CreateShortLinkResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-type RedirectShortLinkRequest struct {
+type RedirectShortUrlRequest struct {
 	Alias     *string `json:"alias" binding:"required"`
 	IPAddress string  `json:"ip_address"`
 	Referer   string  `json:"referer"`
 	UserAgent string  `json:"user_agent"`
 }
 
-type RedirectShortLinkResponse struct {
+type RedirectShortUrlResponse struct {
 	OriginalURL string `json:"original_url"`
 }
 
-type ShortLinkRepository interface {
-	FindByAlias(alias *string) (*ShortLink, error)
-	Create(shortLink *ShortLink) error
-	UpdateClickCount(shortLink *ShortLink) error
+type ShortUrlRepository interface {
+	FindByAlias(alias *string) (*ShortUrl, error)
+	Create(shortUrl *ShortUrl) error
+	UpdateClickCount(shortUrl *ShortUrl) error
 }
 
-type ShortLinkUsecase interface {
-	CreateShortLink(req *CreateShortLinkRequest) (*CreateShortLinkResponse, *errs.Error)
-	RedirectShortLink(req *RedirectShortLinkRequest) (*RedirectShortLinkResponse, *errs.Error)
-	// DeleteShortLink(shortLinkID int, userID int) *errors.Error
-	// GetShortLinkStats(shortLinkID int) (*ShortLink, *errors.Error)
+type ShortUrlUsecase interface {
+	CreateShortUrl(req *CreateShortUrlRequest) (*CreateShortUrlResponse, *errs.Error)
+	RedirectShortUrl(req *RedirectShortUrlRequest) (*RedirectShortUrlResponse, *errs.Error)
+	// DeleteShortUrl(shortUrlID int, userID int) *errors.Error
+	// GetShortUrlStats(shortUrlID int) (*ShortUrl, *errors.Error)
 }

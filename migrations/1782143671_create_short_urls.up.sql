@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS short_links(
+CREATE TABLE IF NOT EXISTS short_urls(
     id SERIAL PRIMARY KEY,
     original_url TEXT NOT NULL,
     click_count INTEGER DEFAULT 0,
