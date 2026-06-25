@@ -7,7 +7,10 @@ import (
 	"pendekin_go/config"
 	"pendekin_go/internal/domain"
 	"pendekin_go/pkg/errs"
+	"pendekin_go/pkg/logger"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type ShortUrlUsecase struct {
@@ -46,11 +49,18 @@ func (s *ShortUrlUsecase) CreateShortUrl(req *domain.CreateShortUrlRequest) (*do
 		shortUrl, err := s.shortUrlRepo.FindByAlias(alias)
 
 		if shortUrl != nil {
+			logger.Log.Warn("alias already exists",
+				zap.String("alias", *alias),
+			)
 			return nil, errs.Conflict("alias already exist", err)
 		}
 
 		if err != nil && !errors.Is(err, domain.ErrAliasNotFound) {
-			return nil, errs.Internal("failed to find short link by alias", err)
+			logger.Log.Error("failed to find short url by alias",
+				zap.String("alias", *alias),
+				zap.Error(err),
+			)
+			return nil, errs.Internal("failed to find short url by alias", err)
 		}
 
 	}
@@ -70,6 +80,10 @@ func (s *ShortUrlUsecase) CreateShortUrl(req *domain.CreateShortUrlRequest) (*do
 		Alias:       alias,
 	}
 	if err := s.shortUrlRepo.Create(shortLink); err != nil {
+		logger.Log.Error("failed to create short url",
+			zap.String("alias", *alias),
+			zap.Error(err),
+		)
 		err := errs.Internal("failed to create short url", err)
 		return nil, err
 	}
@@ -82,17 +96,31 @@ func (s *ShortUrlUsecase) CreateShortUrl(req *domain.CreateShortUrlRequest) (*do
 		ExpiresAt:   shortLink.ExpiresAt,
 		CreatedAt:   shortLink.CreatedAt,
 	}
+	logger.Log.Info("short url created successfully",
+		zap.String("alias", *alias),
+		zap.String("original_url", shortLink.OriginalURL),
+		zap.String("user_id", fmt.Sprint(shortLink.UserID)),
+		zap.String("expires_at", shortLink.ExpiresAt.String()),
+		zap.String("created_at", shortLink.CreatedAt.String()),
+	)
 	return res, nil
 }
 
 func (s *ShortUrlUsecase) RedirectShortUrl(req *domain.RedirectShortUrlRequest) (*domain.RedirectShortUrlResponse, *errs.Error) {
 	shortUrl, err := s.shortUrlRepo.FindByAlias(req.Alias)
 	if err != nil && !errors.Is(err, domain.ErrAliasNotFound) {
+		logger.Log.Error("failed to find short url by alias",
+			zap.String("alias", *req.Alias),
+			zap.Error(err),
+		)
 		err := errs.Internal("failed to find short url by alias", err)
 		return nil, err
 	}
 
 	if shortUrl == nil {
+		logger.Log.Warn("short url not found",
+			zap.String("alias", *req.Alias),
+		)
 		err := errs.NotFound("short url not found", err)
 		return nil, err
 	}
@@ -102,8 +130,13 @@ func (s *ShortUrlUsecase) RedirectShortUrl(req *domain.RedirectShortUrlRequest) 
 	}
 
 	if err := s.shortUrlRepo.UpdateClickCount(shortUrl); err != nil {
+		logger.Log.Error("failed to update click count",
+			zap.String("alias", *req.Alias),
+			zap.Error(err),
+		)
 		err := errs.Internal("failed to update click count", err)
 		return nil, err
+
 	}
 
 	if err := s.clickLogRepo.Create(&domain.ClickLog{
@@ -113,9 +146,20 @@ func (s *ShortUrlUsecase) RedirectShortUrl(req *domain.RedirectShortUrlRequest) 
 		Referer:    req.Referer,
 		ShortURLID: shortUrl.ID,
 	}); err != nil {
+		logger.Log.Error("failed to create click log",
+			zap.String("alias", *req.Alias),
+			zap.Error(err),
+		)
 		err := errs.Internal("failed to create click log", err)
 		return nil, err
 	}
+
+	logger.Log.Info("short url redirected successfully",
+		zap.String("alias", *req.Alias),
+		zap.String("original_url", shortUrl.OriginalURL),
+		zap.String("ip_address", req.IPAddress),
+		zap.String("short_url_id", fmt.Sprint(shortUrl.ID)),
+	)
 
 	return res, nil
 }

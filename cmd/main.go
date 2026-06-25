@@ -7,6 +7,7 @@ import (
 	"pendekin_go/internal/handler"
 	"pendekin_go/internal/repository"
 	"pendekin_go/internal/usecase"
+	"pendekin_go/pkg/logger"
 	"pendekin_go/pkg/validation"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,9 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
 	}
+
+	// Init Logger
+	logger.Init(cfg.App.AppEnv)
 
 	// Register Validators
 	validation.RegisterValidators()
