@@ -6,6 +6,7 @@ import (
 	"pendekin_go/internal/domain"
 	"pendekin_go/pkg/response"
 	"pendekin_go/pkg/validation"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -64,4 +65,24 @@ func (s *ShortUrlHandler) Redirect(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusMovedPermanently, resp.OriginalURL)
+}
+
+func (s *ShortUrlHandler) Delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		response.ResponseNOK(c, http.StatusBadRequest, "invalid id", nil)
+		return
+	}
+
+	req := domain.DeleteShortUrlRequest{
+		ID:     id,
+		UserID: 1,
+	}
+
+	resp, errs := s.shortUrlUseCase.DeleteShortUrl(&req)
+	if errs != nil {
+		response.ResponseNOK(c, errs.Code, errs.Message, nil)
+		return
+	}
+	response.ResponseOK(c, 200, "Short url deleted successfully", resp)
 }

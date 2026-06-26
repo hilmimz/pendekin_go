@@ -19,7 +19,7 @@ func NewShortUrlRepository(db *gorm.DB) *ShortUrlRepository {
 
 func (s *ShortUrlRepository) FindByAlias(alias *string) (*domain.ShortUrl, error) {
 	var shortLink domain.ShortUrl
-	err := s.db.Where("alias = ?", alias).First(&shortLink).Error // langsung ambil error
+	err := s.db.Where("alias = ?", alias).First(&shortLink).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, domain.ErrAliasNotFound
@@ -31,8 +31,29 @@ func (s *ShortUrlRepository) FindByAlias(alias *string) (*domain.ShortUrl, error
 	return &shortLink, nil
 }
 
+func (s *ShortUrlRepository) FindById(id int) (*domain.ShortUrl, error) {
+	var shortUrl domain.ShortUrl
+	err := s.db.Where("id = ?", id).First(&shortUrl).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, domain.ErrAliasNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &shortUrl, nil
+}
+
 func (s *ShortUrlRepository) Create(shortLink *domain.ShortUrl) error {
 	if err := s.db.Create(shortLink).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *ShortUrlRepository) Delete(shortLink *domain.ShortUrl) error {
+	if err := s.db.Delete(shortLink).Error; err != nil {
 		return err
 	}
 	return nil

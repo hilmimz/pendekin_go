@@ -163,3 +163,48 @@ func (s *ShortUrlUsecase) RedirectShortUrl(req *domain.RedirectShortUrlRequest) 
 
 	return res, nil
 }
+
+func (s *ShortUrlUsecase) DeleteShortUrl(req *domain.DeleteShortUrlRequest) (*domain.DeleteShortUrlResponse, *errs.Error) {
+	shortUrl, err := s.shortUrlRepo.FindById(req.ID)
+	if err != nil && !errors.Is(err, domain.ErrAliasNotFound) {
+		logger.Log.Error("failed to find short url by id",
+			zap.Int("id", req.ID),
+			zap.Error(err),
+		)
+		err := errs.Internal("failed to find short url by id", err)
+		return nil, err
+	}
+
+	if shortUrl == nil {
+		logger.Log.Warn("short url not found",
+			zap.Int("id", req.ID),
+		)
+		err := errs.NotFound("short url not found", nil)
+		return nil, err
+	}
+
+	if shortUrl.UserID != req.UserID {
+		logger.Log.Warn("user does not own short url",
+			zap.Int("id", req.ID),
+			zap.Int("user_id", req.UserID),
+		)
+		err := errs.Forbidden("user does not own short url", nil)
+		return nil, err
+	}
+
+	if err := s.shortUrlRepo.Delete(shortUrl); err != nil {
+		logger.Log.Error("failed to delete short url",
+			zap.Int("id", req.ID),
+			zap.Error(err),
+		)
+		err := errs.Internal("failed to delete short url", err)
+		return nil, err
+	}
+
+	res := &domain.DeleteShortUrlResponse{
+		ShortUrlID: shortUrl.ID,
+		Alias:      shortUrl.Alias,
+	}
+
+	return res, nil
+}

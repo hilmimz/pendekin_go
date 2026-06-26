@@ -47,3 +47,11 @@ func Unauthorized(msg string, err error) *Error {
 		Err:     err,
 	}
 }
+
+func Forbidden(msg string, err error) *Error {
+	return &Error{
+		Code:    http.StatusForbidden,
+		Message: msg,
+		Err:     err,
+	}
+}

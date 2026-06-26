@@ -46,6 +46,8 @@ func main() {
 	api := router.Group("/api")
 	api.GET("/healthcheck", healthHandler.HealthCheck)
 	api.POST("/short-urls/create", shortUrlHandler.Create)
+	api.DELETE("/short-urls/:id", shortUrlHandler.Delete)
+
 	router.GET("/:alias", shortUrlHandler.Redirect)
 
 	// Short Url Route
