@@ -38,6 +38,7 @@ func (j *JWT) GenerateToken(id int, email string, name string) (string, error) {
 }
 
 func (j *JWT) VerifyToken(tokenString string) (*jwt.Token, error) {
+	// Use ParseWithClaims for custom claims, for default jwt map claims use Parse instead
 	token, err := jwt.ParseWithClaims(tokenString, &domain.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.SecretKey, nil
 	})
