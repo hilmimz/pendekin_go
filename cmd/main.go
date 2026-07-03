@@ -61,8 +61,8 @@ func main() {
 	router.GET("/:alias", shortUrlHandler.Redirect)
 
 	// Auth
-	api.POST("/users/register", userHandler.Register)
-	api.POST("/users/login", userHandler.Login)
+	api.POST("/auth/register", userHandler.Register)
+	api.POST("/auth/login", userHandler.Login)
 
 	// Short Url
 	api.Use(authMiddleware.Handle())
