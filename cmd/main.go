@@ -37,6 +37,7 @@ func main() {
 
 	// Init Middleware
 	authMiddleware := middleware.NewAuthMiddleware(JWT)
+	corsMiddleware := middleware.NewCORSManager(cfg.App)
 
 	// Init Repository
 	shortUrlRepo := repository.NewShortUrlRepository(db.DB)
@@ -50,10 +51,12 @@ func main() {
 	// Init Handlers
 	healthHandler := handler.NewHealthHandler(db)
 	shortUrlHandler := handler.NewShortUrlHandler(shortUrlUseCase)
-	userHandler := handler.NewUserHandler(userUseCase)
+	userHandler := handler.NewUserHandler(userUseCase, &cfg.App)
 
 	// Setup Router
 	router := gin.Default()
+	router.Use(corsMiddleware.CORS())
+
 	api := router.Group("/api")
 
 	// Public
@@ -63,6 +66,7 @@ func main() {
 	// Auth
 	api.POST("/auth/register", userHandler.Register)
 	api.POST("/auth/login", userHandler.Login)
+	api.GET("/auth/me", userHandler.FetchMe)
 
 	// Short Url
 	api.Use(authMiddleware.Handle())

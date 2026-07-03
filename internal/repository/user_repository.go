@@ -36,3 +36,15 @@ func (ur *UserRepository) Create(user *domain.User) error {
 	}
 	return nil
 }
+
+func (ur *UserRepository) FindByID(id int) (*domain.User, error) {
+	var user domain.User
+	err := ur.db.Where("id = ?", id).First(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, domain.ErrEmailNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

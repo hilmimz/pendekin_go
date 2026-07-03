@@ -46,15 +46,29 @@ type UserLoginRequest struct {
 }
 
 type UserLoginResponse struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
 	Token string `json:"token"`
+}
+
+type FetchMeRequest struct {
+	UserID int `json:"user_id"`
+}
+
+type FetchMeResponse struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type UserRepository interface {
 	FindByEmail(email string) (*User, error)
+	FindByID(id int) (*User, error)
 	Create(user *User) error
 }
 
 type UserUsecase interface {
 	Register(req *UserRegisterRequest) (*UserRegisterResponse, *errs.Error)
 	Login(req *UserLoginRequest) (*UserLoginResponse, *errs.Error)
+	FetchMe(req *FetchMeRequest) (*FetchMeResponse, *errs.Error)
 }

@@ -108,7 +108,31 @@ func (uc *UserUseCase) Login(req *domain.UserLoginRequest) (*domain.UserLoginRes
 	}
 
 	res := &domain.UserLoginResponse{
+		Email: user.Email,
+		Name:  user.Name,
 		Token: token,
+	}
+
+	return res, nil
+}
+
+func (uc *UserUseCase) FetchMe(req *domain.FetchMeRequest) (*domain.FetchMeResponse, *errs.Error) {
+	user, err := uc.UserRepo.FindByID(req.UserID)
+	if err != nil && !errors.Is(err, domain.ErrEmailNotFound) {
+		logger.Log.Error("failed to find user by id",
+			zap.Int("Id", req.UserID),
+			zap.Error(err),
+		)
+		return nil, errs.Internal("failed to find user by id", err)
+	}
+	if user == nil {
+		return nil, errs.Unauthorized("invalid id", nil)
+	}
+
+	res := &domain.FetchMeResponse{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
 	}
 
 	return res, nil

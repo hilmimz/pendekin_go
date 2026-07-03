@@ -5,7 +5,6 @@ import (
 	"pendekin_go/pkg/errs"
 	"pendekin_go/pkg/jwt"
 	"pendekin_go/pkg/response"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,23 +19,15 @@ func NewAuthMiddleware(jwt *jwt.JWT) *AuthMiddleware {
 
 func (m *AuthMiddleware) Handle() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			response.ResponseNOK(c, http.StatusUnauthorized, "authorization header is required", nil)
+		tokenString, err := c.Cookie("token")
+		if err != nil {
+			response.ResponseNOK(c, http.StatusUnauthorized, "unauthorized", nil)
 			c.Abort()
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			response.ResponseNOK(c, http.StatusUnauthorized, "invalid authorization format", nil)
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
 		if tokenString == "" {
-			response.ResponseNOK(c, http.StatusUnauthorized, "token is required", nil)
+			response.ResponseNOK(c, http.StatusUnauthorized, "unauthorized", nil)
 			c.Abort()
 			return
 		}

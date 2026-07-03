@@ -25,6 +25,7 @@ type AppConfig struct {
 	ExpiresIn    int    `env:"EXPIRES_IN" envDefault:"24"`
 	JWTSecret    string `env:"JWT_SECRET" envDefault:"secret"`
 	JWTExpiresIn int    `env:"JWT_EXPIRES_IN" envDefault:"86400"`
+	FrontendURL  string `env:"FRONTEND_URL" envDefault:"localhost:5173"`
 }
 
 func NewConfig() (*Config, error) {
