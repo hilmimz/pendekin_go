@@ -74,6 +74,7 @@ func main() {
 		api.DELETE("/short-urls/:id", shortUrlHandler.Delete)
 
 		api.GET("/auth/me", userHandler.FetchMe)
+		api.POST("/auth/logout", userHandler.Logout)
 	}
 
 	router.Run(":8080")

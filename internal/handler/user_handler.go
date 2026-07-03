@@ -79,6 +79,11 @@ func (h *UserHandler) Login(c *gin.Context) {
 	})
 }
 
+func (h *UserHandler) Logout(c *gin.Context) {
+	c.SetCookie("token", "", -1, "/", "", true, true)
+	response.ResponseOK(c, http.StatusOK, "logout success", nil)
+}
+
 func (h *UserHandler) FetchMe(c *gin.Context) {
 	var req domain.FetchMeRequest
 	userId, ok := c.Get("user_id")
