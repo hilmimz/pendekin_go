@@ -15,14 +15,14 @@ type ShortUrl struct {
 	OriginalURL string    `json:"original_url"`
 	ClickCount  int       `json:"click_count"`
 	CreatedAt   time.Time `json:"created_at"`
-	UserID      int       `json:"user_id"`
+	UserID      *int      `json:"user_id"`
 	ExpiresAt   time.Time `json:"expires_at"`
 	Alias       *string   `json:"alias"`
 }
 
 type CreateShortUrlRequest struct {
 	OriginalURL string  `json:"original_url" binding:"required,url"`
-	UserID      int     `json:"user_id"`
+	UserID      *int    `json:"user_id"`
 	ExpiresIn   *int    `json:"expires_in" binding:"omitempty,min=1"`
 	Alias       *string `json:"alias" binding:"omitempty,min=4,max=20,alphanum"`
 }
@@ -48,8 +48,8 @@ type RedirectShortUrlResponse struct {
 }
 
 type DeleteShortUrlRequest struct {
-	ID     int `json:"id"`
-	UserID int `json:"user_id"`
+	ID     int  `json:"id"`
+	UserID *int `json:"user_id"`
 }
 
 type DeleteShortUrlResponse struct {

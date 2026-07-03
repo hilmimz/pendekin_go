@@ -35,6 +35,15 @@ func (s *ShortUrlHandler) Create(c *gin.Context) {
 		return
 	}
 
+	userId, ok := c.Get("user_id")
+	if !ok {
+		response.ResponseNOK(c, http.StatusUnauthorized, "unauthorized", nil)
+		return
+	}
+
+	userIdInt := userId.(int)
+	req.UserID = &userIdInt
+
 	resp, err := s.shortUrlUseCase.CreateShortUrl(&req)
 	if err != nil {
 		response.ResponseNOK(c, err.Code, err.Message, nil)
@@ -74,9 +83,18 @@ func (s *ShortUrlHandler) Delete(c *gin.Context) {
 		return
 	}
 
+	userId, ok := c.Get("user_id")
+	if !ok {
+		response.ResponseNOK(c, http.StatusUnauthorized, "unauthorized", nil)
+		return
+	}
+
+	userIdInt := userId.(int)
+	pointerId := &userIdInt
+
 	req := domain.DeleteShortUrlRequest{
 		ID:     id,
-		UserID: 1, // should be changed if auth is implemented
+		UserID: pointerId,
 	}
 
 	resp, errs := s.shortUrlUseCase.DeleteShortUrl(&req)

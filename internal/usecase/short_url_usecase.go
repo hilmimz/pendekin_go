@@ -75,7 +75,7 @@ func (s *ShortUrlUsecase) CreateShortUrl(req *domain.CreateShortUrlRequest) (*do
 	shortLink := &domain.ShortUrl{
 		OriginalURL: req.OriginalURL,
 		ClickCount:  0,
-		UserID:      1,
+		UserID:      req.UserID,
 		ExpiresAt:   expiresAt,
 		Alias:       alias,
 	}
@@ -186,7 +186,7 @@ func (s *ShortUrlUsecase) DeleteShortUrl(req *domain.DeleteShortUrlRequest) (*do
 	if shortUrl.UserID != req.UserID {
 		logger.Log.Warn("user does not own short url",
 			zap.Int("id", req.ID),
-			zap.Int("user_id", req.UserID),
+			zap.Int("user_id", *req.UserID),
 		)
 		err := errs.Forbidden("user does not own short url", nil)
 		return nil, err
