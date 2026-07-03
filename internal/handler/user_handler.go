@@ -43,6 +43,15 @@ func (h *UserHandler) Register(c *gin.Context) {
 		response.ResponseNOK(c, errs.Code, errs.Message, nil)
 		return
 	}
+	c.SetCookie(
+		"token",
+		resp.Token,
+		h.cfg.JWTExpiresIn, // Change if remember me for 14 days is implemented
+		"/",
+		"",
+		true,
+		true,
+	)
 	response.ResponseOK(c, http.StatusCreated, "user registered successfully", resp)
 }
 

@@ -67,12 +67,23 @@ func (uc *UserUseCase) Register(req *domain.UserRegisterRequest) (*domain.UserRe
 		)
 		return nil, errs.Internal("failed to find user by email", err)
 	}
+
+	token, err := uc.JWT.GenerateToken(registeredUser.ID, registeredUser.Email, registeredUser.Name)
+	if err != nil {
+		logger.Log.Error("failed to generate token",
+			zap.Error(err),
+		)
+		return nil, errs.Internal("failed to generate token", err)
+	}
+
 	res := domain.UserRegisterResponse{
 		ID:        registeredUser.ID,
 		Name:      registeredUser.Name,
 		Email:     registeredUser.Email,
 		CreatedAt: registeredUser.CreatedAt,
+		Token:     token,
 	}
+
 	logger.Log.Info("user registered successfully",
 		zap.Int("id", res.ID),
 		zap.String("name", res.Name),
