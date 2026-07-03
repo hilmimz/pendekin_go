@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"pendekin_go/pkg/errs"
 	"pendekin_go/pkg/jwt"
@@ -57,7 +56,6 @@ func (m *AuthMiddleware) Handle() gin.HandlerFunc {
 		}
 
 		if claims == nil {
-			log.Print("kosong")
 			response.ResponseNOK(c, http.StatusUnauthorized, "unauthorized", nil)
 			c.Abort()
 			return
