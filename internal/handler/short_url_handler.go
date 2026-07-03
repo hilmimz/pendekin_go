@@ -76,7 +76,7 @@ func (s *ShortUrlHandler) Delete(c *gin.Context) {
 
 	req := domain.DeleteShortUrlRequest{
 		ID:     id,
-		UserID: 1,
+		UserID: 1, // should be changed if auth is implemented
 	}
 
 	resp, errs := s.shortUrlUseCase.DeleteShortUrl(&req)
