@@ -66,13 +66,14 @@ func main() {
 	// Auth
 	api.POST("/auth/register", userHandler.Register)
 	api.POST("/auth/login", userHandler.Login)
-	api.GET("/auth/me", userHandler.FetchMe)
 
 	// Short Url
 	api.Use(authMiddleware.Handle())
 	{
 		api.POST("/short-urls/create", shortUrlHandler.Create)
 		api.DELETE("/short-urls/:id", shortUrlHandler.Delete)
+
+		api.GET("/auth/me", userHandler.FetchMe)
 	}
 
 	router.Run(":8080")

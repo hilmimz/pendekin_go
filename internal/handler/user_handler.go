@@ -8,7 +8,6 @@ import (
 	"pendekin_go/internal/usecase"
 	"pendekin_go/pkg/response"
 	"pendekin_go/pkg/validation"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -82,12 +81,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 func (h *UserHandler) FetchMe(c *gin.Context) {
 	var req domain.FetchMeRequest
-	id, err := c.Cookie("id")
-	if err != nil {
-		response.ResponseNOK(c, http.StatusUnauthorized, "invalid cookie", nil)
+	userId, ok := c.Get("user_id")
+	if !ok {
+		response.ResponseNOK(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
-	req.UserID, _ = strconv.Atoi(id)
+
+	userIdInt := userId.(int)
+	req.UserID = userIdInt
 
 	resp, errs := h.userUseCase.FetchMe(&req)
 	if errs != nil {
