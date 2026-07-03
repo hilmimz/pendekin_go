@@ -42,3 +42,24 @@ func (h *UserHandler) Register(c *gin.Context) {
 	}
 	response.ResponseOK(c, http.StatusCreated, "user registered successfully", resp)
 }
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var req domain.UserLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			response.ResponseNOK(c, http.StatusBadRequest, "validation error", validation.FormatValidationErrors(ve))
+			return
+		}
+
+		response.ResponseNOK(c, http.StatusBadRequest, "invalid request body", nil)
+		return
+	}
+
+	resp, errs := h.userUseCase.Login(&req)
+	if errs != nil {
+		response.ResponseNOK(c, errs.Code, errs.Message, nil)
+		return
+	}
+	response.ResponseOK(c, http.StatusOK, "login successful", resp)
+}

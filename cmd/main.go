@@ -5,8 +5,10 @@ import (
 	"pendekin_go/config"
 	"pendekin_go/internal/database"
 	"pendekin_go/internal/handler"
+	"pendekin_go/internal/middleware"
 	"pendekin_go/internal/repository"
 	"pendekin_go/internal/usecase"
+	"pendekin_go/pkg/jwt"
 	"pendekin_go/pkg/logger"
 	"pendekin_go/pkg/validation"
 
@@ -24,11 +26,17 @@ func main() {
 		log.Fatal("failed to connect to database: ", err)
 	}
 
+	// Load JWT Manager
+	JWT := jwt.NewJWT(&cfg.App)
+
 	// Init Logger
 	logger.Init(cfg.App.AppEnv)
 
 	// Register Validators
 	validation.RegisterValidators()
+
+	// Init Middleware
+	authMiddleware := middleware.NewAuthMiddleware(JWT)
 
 	// Init Repository
 	shortUrlRepo := repository.NewShortUrlRepository(db.DB)
@@ -37,7 +45,7 @@ func main() {
 
 	// Init Usecase
 	shortUrlUseCase := usecase.NewShortUrlUsecase(shortUrlRepo, clickLogRepo, &cfg.App)
-	userUseCase := usecase.NewUserUseCase(userRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo, JWT)
 
 	// Init Handlers
 	healthHandler := handler.NewHealthHandler(db)
@@ -47,14 +55,21 @@ func main() {
 	// Setup Router
 	router := gin.Default()
 	api := router.Group("/api")
-	api.GET("/healthcheck", healthHandler.HealthCheck)
-	api.POST("/short-urls/create", shortUrlHandler.Create)
-	api.DELETE("/short-urls/:id", shortUrlHandler.Delete)
-	api.POST("/users/register", userHandler.Register)
 
+	// Public
+	api.GET("/healthcheck", healthHandler.HealthCheck)
 	router.GET("/:alias", shortUrlHandler.Redirect)
 
-	// Short Url Route
+	// Auth
+	api.POST("/users/register", userHandler.Register)
+	api.POST("/users/login", userHandler.Login)
+
+	// Short Url
+	api.Use(authMiddleware.Handle())
+	{
+		api.POST("/short-urls/create", shortUrlHandler.Create)
+		api.DELETE("/short-urls/:id", shortUrlHandler.Delete)
+	}
 
 	router.Run(":8080")
 }

@@ -19,10 +19,12 @@ type DatabaseConfig struct {
 }
 
 type AppConfig struct {
-	AppName     string `env:"APP_NAME" envDefault:"localhost:8080"`
-	AppEnv      string `env:"APP_ENV" envDefault:"development"`
-	AliasLength int    `env:"ALIAS_LENGTH" envDefault:"6"`
-	ExpiresIn   int    `env:"EXPIRES_IN" envDefault:"24"`
+	AppName      string `env:"APP_NAME" envDefault:"localhost:8080"`
+	AppEnv       string `env:"APP_ENV" envDefault:"development"`
+	AliasLength  int    `env:"ALIAS_LENGTH" envDefault:"6"`
+	ExpiresIn    int    `env:"EXPIRES_IN" envDefault:"24"`
+	JWTSecret    string `env:"JWT_SECRET" envDefault:"secret"`
+	JWTExpiresIn int    `env:"JWT_EXPIRES_IN" envDefault:"86400"`
 }
 
 func NewConfig() (*Config, error) {

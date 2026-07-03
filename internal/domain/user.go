@@ -4,6 +4,8 @@ import (
 	"errors"
 	"pendekin_go/pkg/errs"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -16,6 +18,13 @@ type User struct {
 	Email     string    `json:"email"`
 	Password  string    `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type JWTClaims struct {
+	UserID int    `json:"sub"`
+	Email  string `json:"email"`
+	Name   string `json:"name"`
+	jwt.RegisteredClaims
 }
 
 type UserRegisterRequest struct {
@@ -31,6 +40,15 @@ type UserRegisterResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type UserLoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+}
+
+type UserLoginResponse struct {
+	Token string `json:"token"`
+}
+
 type UserRepository interface {
 	FindByEmail(email string) (*User, error)
 	Create(user *User) error
@@ -38,4 +56,5 @@ type UserRepository interface {
 
 type UserUsecase interface {
 	Register(req *UserRegisterRequest) (*UserRegisterResponse, *errs.Error)
+	Login(req *UserLoginRequest) (*UserLoginResponse, *errs.Error)
 }

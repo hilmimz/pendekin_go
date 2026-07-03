@@ -1,6 +1,11 @@
 package errs
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type Error struct {
 	Code    int
@@ -14,6 +19,16 @@ func (e *Error) Error() string {
 
 func (e *Error) Unwrap() error {
 	return e.Err
+}
+
+func IsTokenExpired(err error) bool {
+	return errors.Is(err, jwt.ErrTokenExpired)
+}
+
+func IsTokenInvalid(err error) bool {
+	return errors.Is(err, jwt.ErrTokenSignatureInvalid) ||
+		errors.Is(err, jwt.ErrTokenMalformed) ||
+		errors.Is(err, jwt.ErrTokenNotValidYet)
 }
 
 func NotFound(msg string, err error) *Error {
