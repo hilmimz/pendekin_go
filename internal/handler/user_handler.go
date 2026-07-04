@@ -52,7 +52,12 @@ func (h *UserHandler) Register(c *gin.Context) {
 		true,
 		true,
 	)
-	response.ResponseOK(c, http.StatusCreated, "user registered successfully", resp)
+	response.ResponseOK(c, http.StatusCreated, "user registered successfully", gin.H{
+		"id":         resp.ID,
+		"name":       resp.Name,
+		"email":      resp.Email,
+		"created_at": resp.CreatedAt,
+	})
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
